@@ -1,53 +1,53 @@
-import { PrismaClient } from '@prisma/client/extension';
+import { PrismaClient } from '@prisma/client';
+
 import { prismaLogger } from './logger';
 
 declare global {
-  var _db: PrismaClient | undefined;
+  // eslint-disable-next-line no-unused-vars
+  var globalDatabase: PrismaClient | undefined;
 }
 
-if (!global._db) {
-  global._db = new PrismaClient({
+if (!global.globalDatabase) {
+  global.globalDatabase = new PrismaClient({
     log: [
       {
-        emit: "event",
-        level: "query",
+        emit: 'event',
+        level: 'query',
       },
       {
-        emit: "event",
-        level: "info",
+        emit: 'event',
+        level: 'info',
       },
       {
-        emit: "event",
-        level: "warn",
+        emit: 'event',
+        level: 'warn',
       },
       {
-        emit: "event",
-        level: "error",
+        emit: 'event',
+        level: 'error',
       },
     ],
   });
 }
 
-const dbWithEvents = global._db as PrismaClient & {
+const databaseWithEvents = global.globalDatabase as PrismaClient & {
   $on: (event: string, listener: (event: any) => void) => void;
 };
 
-dbWithEvents.$on("query", (e: any) => {
-  prismaLogger.info(e);
+databaseWithEvents.$on('query', (event: any) => {
+  prismaLogger.info(event);
 });
 
-dbWithEvents.$on("info", (e: any) => {
-  prismaLogger.info(e);
+databaseWithEvents.$on('info', (event: any) => {
+  prismaLogger.info(event);
 });
 
-dbWithEvents.$on("warn", (e: any) => {
-  prismaLogger.warn(e);
+databaseWithEvents.$on('warn', (event: any) => {
+  prismaLogger.warn(event);
 });
 
-dbWithEvents.$on("error", (e: any) => {
-  prismaLogger.error(e);
+databaseWithEvents.$on('error', (event: any) => {
+  prismaLogger.error(event);
 });
 
-const db: PrismaClient = global._db;
-
-export default db;
+export const database: PrismaClient = global.globalDatabase;
