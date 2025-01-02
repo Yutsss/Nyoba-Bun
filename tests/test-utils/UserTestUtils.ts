@@ -29,4 +29,12 @@ export class UserTestUtils {
       },
     });
   }
+
+  static async findByEmail(email: string) {
+    return database.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+  }
 }

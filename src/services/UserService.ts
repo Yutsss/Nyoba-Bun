@@ -1,9 +1,16 @@
-import { ConflictError, InternalServerError } from '../errors';
+import {
+  ConflictError,
+  InternalServerError,
+  UnauthorizedError,
+} from '../errors';
 import type {
   IRegisterUserRequest,
   IRegisterUserResponse,
+  ILoginUserRequest,
+  ILoginUserResponse,
 } from '../models/UserModel';
 import { UserRepository } from '../repositories';
+import { JWTUtils } from '../utils/jwt-utils';
 import { Password } from '../utils/password';
 import { Validator } from '../utils/validator';
 import { UserValidation } from '../validations';
@@ -36,6 +43,35 @@ export class UserService {
       id: user.id,
       email: user.email,
       name: user.name,
+    };
+  }
+
+  static async loginUser(
+    request: ILoginUserRequest,
+  ): Promise<ILoginUserResponse> {
+    const validData = Validator.validate(UserValidation.LOGIN, request);
+
+    const user = await UserRepository.findByEmail(validData.email);
+
+    if (!user) {
+      throw new UnauthorizedError('Invalid email or password');
+    }
+
+    const isPasswordMatch = await Password.verify(
+      validData.password,
+      user.password,
+    );
+
+    if (!isPasswordMatch) {
+      throw new UnauthorizedError('Invalid email or password');
+    }
+
+    const payload = await JWTUtils.generatePayload(user.id);
+
+    const accessToken = await JWTUtils.sign(payload);
+
+    return {
+      accessToken,
     };
   }
 }

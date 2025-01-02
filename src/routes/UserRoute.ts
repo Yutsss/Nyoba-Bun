@@ -5,3 +5,4 @@ import { UserController } from '../controllers';
 export const userRoute = new Hono();
 
 userRoute.post('/register', UserController.registerUser);
+userRoute.post('/login', UserController.loginUser);

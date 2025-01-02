@@ -87,3 +87,87 @@ describe('POST /api/user/register ', () => {
     expect(responseJson.data).toBeUndefined();
   });
 });
+
+describe('POST /api/user/login', () => {
+  afterEach(async () => {
+    await UserTestUtils.delete();
+  });
+
+  it('should success login user', async () => {
+    await UserTestUtils.create();
+
+    const response = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@mail.com',
+        password: 'test1234',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(200);
+    expect(responseJson.data.accessToken).toBeDefined();
+  });
+
+  it('should fail login user when user not found', async () => {
+    const response = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test2@mail.com',
+        password: 'test1234',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(401);
+    expect(responseJson.errorCode).toBe(401);
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail login user when password is wrong', async () => {
+    await UserTestUtils.create();
+
+    const response = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@mail.com',
+        password: 'test12345',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(401);
+    expect(responseJson.errorCode).toBe(401);
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail login user when email is empty', async () => {
+    const response = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: '',
+        password: 'test1234',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(400);
+    expect(responseJson.errorCode).toBe(400);
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail login user when password is empty', async () => {
+    const response = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@mail.com',
+        password: '',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(400);
+    expect(responseJson.errorCode).toBe(400);
+    expect(responseJson.data).toBeUndefined();
+  });
+});

@@ -2,7 +2,10 @@ import type { Context } from 'hono';
 import { StatusCodes } from 'http-status-codes';
 
 import { UserService } from '../services/UserService';
-import type { IRegisterUserRequest } from './../models/UserModel';
+import type {
+  IRegisterUserRequest,
+  ILoginUserRequest,
+} from './../models/UserModel';
 import { successResponse } from './../utils/api-response';
 
 export class UserController {
@@ -16,6 +19,20 @@ export class UserController {
       c,
       StatusCodes.CREATED,
       'User registered successfully',
+      user,
+    );
+  }
+
+  static async loginUser(c: Context) {
+    const request: ILoginUserRequest =
+      (await c.req.json()) as ILoginUserRequest;
+
+    const user = await UserService.loginUser(request);
+
+    return successResponse(
+      c,
+      StatusCodes.OK,
+      'User logged in successfully',
       user,
     );
   }
