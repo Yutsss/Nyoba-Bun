@@ -1,10 +1,19 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 
 import { InternalServerError } from './errors';
 import { healthRoute, userRoute } from './routes';
 import { errorResponse } from './utils/api-response';
 
 export const app = new Hono();
+
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    credentials: true,
+  }),
+);
 
 app.route('/api', healthRoute);
 app.route('/api/users', userRoute);

@@ -1,4 +1,7 @@
+import { sign } from 'hono/jwt';
+
 import { database } from '../../src/configs/database';
+import { JWT_SECRET } from '../../src/constants/jwt-constants';
 
 export class UserTestUtils {
   static async delete() {
@@ -36,5 +39,26 @@ export class UserTestUtils {
         email: email,
       },
     });
+  }
+
+  static async deleteByEmail(email: string) {
+    await database.user.deleteMany({
+      where: {
+        email: email,
+      },
+    });
+  }
+
+  static async generateExpiredToken(userId: number) {
+    const expiredTime = Math.floor(Date.now() / 1000) - 60;
+
+    return sign(
+      {
+        sub: userId,
+        exp: expiredTime,
+        iat: expiredTime - 60,
+      },
+      JWT_SECRET,
+    );
   }
 }

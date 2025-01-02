@@ -18,4 +18,12 @@ export class UserRepository {
       },
     });
   }
+
+  static async findById(id: number) {
+    return database.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+  }
 }

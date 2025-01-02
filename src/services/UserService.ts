@@ -8,6 +8,8 @@ import type {
   IRegisterUserResponse,
   ILoginUserRequest,
   ILoginUserResponse,
+  IGetUserRequest,
+  IGetUserResponse,
 } from '../models/UserModel';
 import { UserRepository } from '../repositories';
 import { JWTUtils } from '../utils/jwt-utils';
@@ -72,6 +74,21 @@ export class UserService {
 
     return {
       accessToken,
+    };
+  }
+
+  static async getUser(request: IGetUserRequest): Promise<IGetUserResponse> {
+    const userId = request.id as number;
+    const user = await UserRepository.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedError();
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
     };
   }
 }

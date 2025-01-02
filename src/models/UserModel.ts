@@ -19,6 +19,10 @@ export interface ILoginUserResponse {
   accessToken: string;
 }
 
+export interface IGetUserRequest {
+  id: number;
+}
+
 export interface IGetUserResponse {
   id: number;
   email: string;
