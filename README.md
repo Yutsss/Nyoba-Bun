@@ -43,7 +43,7 @@ bun run dev
 To run test:
 
 ```sh
-bun run test
+bun test
 ```
 
 
