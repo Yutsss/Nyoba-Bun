@@ -6,6 +6,7 @@ import type {
   IRegisterUserRequest,
   ILoginUserRequest,
   IGetUserRequest,
+  IUpdateUserRequest,
 } from './../models/UserModel';
 import { successResponse } from './../utils/api-response';
 
@@ -46,5 +47,21 @@ export class UserController {
     const user = await UserService.getUser(request);
 
     return successResponse(c, StatusCodes.OK, 'Success Getting User', user);
+  }
+
+  static async updateUser(c: Context) {
+    const request: IUpdateUserRequest = {
+      id: c.get('userId'),
+      newUserData: (await c.req.json()) as IUpdateUserRequest['newUserData'],
+    };
+
+    const updatedUser = await UserService.updateUser(request);
+
+    return successResponse(
+      c,
+      StatusCodes.OK,
+      'User updated successfully',
+      updatedUser,
+    );
   }
 }

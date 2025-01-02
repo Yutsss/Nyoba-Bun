@@ -288,3 +288,205 @@ describe('GET /api/users/me', () => {
     expect(responseJson.data).toBeUndefined();
   });
 });
+
+describe('PUT /api/users/me', () => {
+  afterEach(async () => {
+    await UserTestUtils.delete();
+    await UserTestUtils.deleteUpdatedUser();
+  });
+
+  it('should success update user', async () => {
+    await UserTestUtils.create();
+
+    const loginResponse = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@mail.com',
+        password: 'test1234',
+      }),
+    });
+
+    const loginResponseJson: any = await loginResponse.json();
+    const accessToken = loginResponseJson.data.accessToken;
+
+    const response = await app.request('/api/users/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        name: 'test2',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(200);
+    expect(responseJson.data.name).toBe('test2');
+    expect(responseJson.data.email).toBe('test@mail.com');
+
+    const getResponse = await app.request('/api/users/me', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const getResponseJson: any = await getResponse.json();
+    expect(getResponse.status).toBe(200);
+    expect(getResponseJson.data.name).toBe('test2');
+    expect(responseJson.data.email).toBe('test@mail.com');
+  });
+
+  it('should fail update user when user not found', async () => {
+    await UserTestUtils.create();
+
+    const loginResponse = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@mail.com',
+        password: 'test1234',
+      }),
+    });
+
+    const loginResponseJson: any = await loginResponse.json();
+    const accessToken = loginResponseJson.data.accessToken;
+
+    await UserTestUtils.deleteByEmail('test@mail.com');
+
+    const response = await app.request('/api/users/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        name: 'test2',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(401);
+    expect(responseJson.errorCode).toBe(401);
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail update user when token is invalid', async () => {
+    const response = await app.request('/api/users/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer invalidtoken`,
+      },
+      body: JSON.stringify({
+        name: 'test2',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(401);
+    expect(responseJson.errorCode).toBe(401);
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail update user when token is empty', async () => {
+    const response = await app.request('/api/users/me', {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: 'test2',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(401);
+    expect(responseJson.errorCode).toBe(401);
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail update user when token is expired', async () => {
+    await UserTestUtils.create();
+
+    const testUser = await UserTestUtils.findByName('test');
+
+    if (!testUser) {
+      appLogger.error('Test user not found');
+
+      return;
+    }
+
+    const expiredToken = await UserTestUtils.generateExpiredToken(testUser.id);
+
+    const response = await app.request('/api/users/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${expiredToken}`,
+      },
+      body: JSON.stringify({
+        name: 'test2',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(401);
+    expect(responseJson.errorCode).toBe(401);
+    expect(responseJson.errorMessage).toBe('Token expired, please login again');
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail update user when name is empty', async () => {
+    await UserTestUtils.create();
+
+    const loginResponse = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@mail.com',
+        password: 'test1234',
+      }),
+    });
+
+    const loginResponseJson: any = await loginResponse.json();
+    const accessToken = loginResponseJson.data.accessToken;
+
+    const response = await app.request('/api/users/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        name: '',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(400);
+    expect(responseJson.errorCode).toBe(400);
+    expect(responseJson.data).toBeUndefined();
+  });
+
+  it('should fail update user when name length less than 4', async () => {
+    await UserTestUtils.create();
+
+    const loginResponse = await app.request('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@mail.com',
+        password: 'test1234',
+      }),
+    });
+
+    const loginResponseJson: any = await loginResponse.json();
+    const accessToken = loginResponseJson.data.accessToken;
+
+    const response = await app.request('/api/users/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        name: 'tes',
+      }),
+    });
+
+    const responseJson: any = await response.json();
+    expect(response.status).toBe(400);
+    expect(responseJson.errorCode).toBe(400);
+    expect(responseJson.data).toBeUndefined();
+  });
+});

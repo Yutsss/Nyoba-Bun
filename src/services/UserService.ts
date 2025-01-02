@@ -10,6 +10,8 @@ import type {
   ILoginUserResponse,
   IGetUserRequest,
   IGetUserResponse,
+  IUpdateUserRequest,
+  IUpdateUserResponse,
 } from '../models/UserModel';
 import { UserRepository } from '../repositories';
 import { JWTUtils } from '../utils/jwt-utils';
@@ -89,6 +91,31 @@ export class UserService {
       id: user.id,
       email: user.email,
       name: user.name,
+    };
+  }
+
+  static async updateUser(
+    request: IUpdateUserRequest,
+  ): Promise<IUpdateUserResponse> {
+    const validData = Validator.validate(
+      UserValidation.UPDATE_USER,
+      request.newUserData,
+    );
+
+    const userId = request.id as number;
+
+    const user = await UserRepository.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedError();
+    }
+
+    const updatedUser = await UserRepository.updateById(userId, validData.name);
+
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      name: updatedUser.name,
     };
   }
 }

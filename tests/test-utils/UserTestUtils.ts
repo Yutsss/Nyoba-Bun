@@ -12,6 +12,14 @@ export class UserTestUtils {
     });
   }
 
+  static async deleteUpdatedUser() {
+    await database.user.deleteMany({
+      where: {
+        name: 'test2',
+      },
+    });
+  }
+
   static async create() {
     await database.user.create({
       data: {

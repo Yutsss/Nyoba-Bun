@@ -8,3 +8,4 @@ export const userRoute = new Hono();
 userRoute.post('/register', UserController.registerUser);
 userRoute.post('/login', UserController.loginUser);
 userRoute.get('/me', authMiddleware, UserController.getUser);
+userRoute.put('/me', authMiddleware, UserController.updateUser);

@@ -26,4 +26,15 @@ export class UserRepository {
       },
     });
   }
+
+  static async updateById(id: number, name: string) {
+    return database.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        name: name,
+      },
+    });
+  }
 }

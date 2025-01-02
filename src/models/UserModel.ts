@@ -30,7 +30,10 @@ export interface IGetUserResponse {
 }
 
 export interface IUpdateUserRequest {
-  name: string;
+  id: number;
+  newUserData: {
+    name: string;
+  };
 }
 
 export interface IUpdateUserResponse {
