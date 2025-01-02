@@ -1,14 +1,21 @@
 import { Hono } from 'hono';
 
-import { healthRoute } from './routes/HealthRoute';
+import { InternalServerError } from './errors';
+import { healthRoute, userRoute } from './routes';
+import { errorResponse } from './utils/api-response';
 
 export const app = new Hono();
 
-// Menggunakan rute modular
 app.route('/api', healthRoute);
+app.route('/api/users', userRoute);
 
-// Custom port dengan nilai default 3000
 const PORT = Number(process.env.PORT_SERVER) || 3000;
+
+if (!PORT) {
+  throw new InternalServerError();
+}
+
+app.onError(async (error, c) => errorResponse(c, error));
 
 Bun.serve({
   fetch: app.fetch,
